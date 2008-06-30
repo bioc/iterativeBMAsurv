@@ -1,0 +1,350 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+% \VignetteIndexEntry{The Iterative Bayesian Model Averaging Algorithm For Survival Analysis}
+%\VignetteDepends{BMA}
+%\VignetteSuggests{}
+%\VignetteKeywords{}
+%\VignettePackage{iterativeBMAsurv}
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\usepackage[authoryear,round]{natbib}
+\usepackage{times}
+\usepackage{comment}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+
+\newlength{\smallfigwidth}
+\setlength{\smallfigwidth}{6cm}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\newcommand{\MAT}[1]{{\bf #1}}
+\newcommand{\VEC}[1]{{\bf #1}}
+
+\newcommand{\Amat}{{\MAT{A}}}
+
+%%notationally this is going to break
+\newcommand{\Emat}{{\MAT{E}}}
+\newcommand{\Xmat}{{\MAT{X}}}
+\newcommand{\Xvec}{{\VEC{X}}}
+\newcommand{\xvec}{{\VEC{x}}}
+
+
+\newcommand{\Zvec}{{\VEC{Z}}}
+\newcommand{\zvec}{{\VEC{z}}}
+
+\newcommand{\calG}{\mbox{${\cal G}$}}
+
+\bibliographystyle{plain}
+
+\title{The Iterative Bayesian Model Averaging Algorithm for Survival Analysis: 
+       an Improved Method for Gene Selection and Survival Analysis on Microarray Data}
+\author{Amalia Annest, Roger E. Bumgarner, Adrian E. Raftery, and Ka Yee Yeung}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Survival analysis is a supervised learning technique that in the context of 
+microarray data is most frequently used to identify genes whose expression levels
+are correlated with patient survival prognosis. Survival analysis is generally 
+applied to diseased samples for the purpose of analyzing time to event, where 
+the event can be any milestone of interest (e.g., metastases, relapse, or death).
+Typically, the interest is in identifying genes that are predictive of a patient's 
+chances for survival. In such cases, both the accuracy of the prediction and 
+the number of genes necessary to obtain a given accuracy is important. In particular, 
+methods that select a small number of relevant genes and provide accurate patient
+risk assessment can aid in the development of simpler diagnostic tests. In addition, 
+methods that adopt a weighted average approach over multiple models have the potential 
+to provide more accurate predictions than methods that do not take model uncertainty 
+into consideration. To this end, we developed the iterative Bayesian Model Averaging 
+(BMA) method for gene selection and survival analysis on microarray data \citep{Annest2008}. 
+Typical gene selection and survival analysis procedures ignore model uncertainty and 
+use a single set of relevant genes (model) to predict patient risk. BMA is a multivariate 
+technique that takes the interaction of variables (typically genes) and model uncertainty 
+into account. In addition, the output of BMA contains posterior probabilities for 
+each prediction, which can be useful in assessing the correctness of a given prognosis.
+
+\subsection{Bayesian Model Averaging (BMA)}  
+
+Bayesian Model Averaging (BMA) takes model uncertainty into consideration by averaging 
+over the posterior distributions of a quantity of interest based on multiple models,
+weighted by their posterior model probabilities \citep{Raftery1995}. The posterior 
+probability that a test sample is at risk for the given event is the posterior probability 
+that the test sample is at risk for the given even computed using the set of relevant 
+genes in model $M_k$ multiplied by the posterior probability of model $M_k$, summed over 
+a set of `good' models $M_k$.
+
+\subsection{Iterative Bayesian Model Averaging (BMA) Algorithm for Survival Analysis}  
+
+The BMA algorithm we have described is limited to data in which the
+number of variables is greater than the number of responses. In the case
+of performing survival analysis on microarray data, there are typically thousands
+or tens of thousands of genes (variables) and only a few dozens samples (responses).
+
+In this package, the iterative BMA algorithm for survival analysis is implemented.
+In the iterative BMA algorithm for survival analysis, we start by ranking the genes 
+in descending order of their log likelihood using a univariate measure such as the 
+Cox Proportional Hazards Model \citep{Cox1972}. In this initial preprocessing step, 
+genes with a larger log likelihood are given a higher ranking. Once the dataset is 
+sorted, we apply the traditional BMA algorithm to the $maxNvar$ top log-ranked genes. 
+We use a default of $maxNvar=25$, because the traditional BMA algorithm employs the 
+leaps and bounds algorithm that is inefficient for numbers of genes (variables) greater 
+than 30. In the next step, genes to which the BMA algorithm assigns low posterior 
+probabilities of being in the predictive model are removed. In our study, we used 1\% as 
+the threshold and eliminated genes with posterior probabilities $<$ 1\%. Suppose $m$ genes 
+are removed. The next $m$ genes from the rank ordered log likelihood scores are added back 
+to the set of genes so that we maintain a window of $maxNvar$ genes and apply the traditional 
+BMA algorithm again. These steps of gene swaps and iterative applications of BMA are 
+continued until all genes are considered.
+
+\section{Some examples}
+ 
+The R package {\tt BMA} is required to run the key commands in this package.  
+
+<<Setup, results=hide>>=
+library(BMA)
+library(iterativeBMAsurv)
+@
+
+An adapted diffuse large B-Cell lymphoma (DLBCL) dataset \citep{Rosenwald2002} is
+included for illustration purposes.  The adapted DLBCL dataset consists
+of the top 100 genes selected using the Cox Proportional Hazards Model. The training
+set consists of 65 samples, while the test set consists of 36 samples. In the following
+examples, we chose parameters to reduce computational time for illustrative purposes.
+Please refer to our manuscript (\citep{Annest2008}) for recommended input parameters.
+
+<<getTrainData>>=
+## Use the sample training data. The data matrix is called trainData.
+data(trainData)
+## The survival time vector for the training set is called trainSurv, where survival times are reported in years.
+data(trainSurv)
+## The censor vector for the training set is called trainCens, where 0 = censored and 1 = uncensored.
+data(trainCens)
+@
+
+The function {\tt iterateBMAsurv.train} selects relevant variables by
+iteratively applying the {\tt bic.surv} function from the {\tt BMA} package
+until all variables are exhausted. The function {\tt iterateBMAsurv.train.wrapper} 
+acts as a wrapper for {\tt iterateBMAsurv.train}, initializing the {\tt bic.surv} 
+parameters and calling {\tt iterateBMAsurv.train} to launch the {\tt bic.surv} iterations. 
+When {\tt iterateBMAsurv.train.wrapper} is called, the data is assumed to be pre-sorted 
+by rank and assumed to contain the desired number of variables. In the training phase, 
+only the sorted training dataset and the corresponding survival times and censor data 
+are required as input. 
+
+<<trainingStep>>=
+## Training phase: select relevant genes
+## In this example training set, the top 100 genes have already been sorted in decreasing order of their log likelihood
+ret.list <- iterateBMAsurv.train.wrapper (x=trainData, surv.time=trainSurv, cens.vec=trainCens, nbest=5)
+
+## Extract the {\tt bic.surv} object
+ret.bic.surv <- ret.list$obj
+
+## Extract the names of the genes from the last iteration of {\tt bic.surv}
+gene.names <- ret.list$curr.names
+
+## Get the selected genes with probne0 > 0
+top.gene.names <- gene.names[ret.bic.surv$probne0 > 0]
+top.gene.names
+
+## Get the posterior probabilities for the selected models
+ret.bic.surv$postprob
+@
+
+If all the variables are exhausted in the {\tt bic.surv} iterations, the 
+{\tt iterateBMAsurv.train.wrapper} function returns {\tt curr.names}, or a
+vector containing the names of the variables in the last iteration of {\tt bic.surv}.
+It also returns an object of class {\tt bic.surv} from the last iteration of {\tt bic.surv}.  
+This object is a list consisting of many components. Here are some
+of the relevant components:
+\begin{itemize}
+\item{\tt namesx}: The names of the variables in the last iteration of 
+                   {\tt bic.surv}.
+\item {\tt postprob}: The posterior probabilities of the models selected.
+                      The length of this vector indicates the number of
+		      models selected by BMA.
+\item {\tt which}: A logical matrix with one row per model and one column per 
+                   variable indicating whether that variable is in the model.
+\item {\tt probne0}: The posterior probability that each variable is non-zero 
+                     (in percent) in the last iteration of {\tt bic.surv}.  
+	             The length of this vector should be identical
+	             to that of {\tt curr.mat}.
+\item {\tt mle}: Matrix with one row per model and one column per variable 
+      	         giving the maximum likelihood estimate of each 
+		 coefficient for each model.
+\end{itemize}
+
+In the training phase, the relevant variables (genes) are selected using
+the training data, the survival times, and the censor vector. In the test phase, 
+we call the function {\tt predictBicSurv} with the selected variables (genes), 
+the selected models, and the corresponding posterior probabilities to predict 
+the risk scores for the patient samples in the test set. The predicted risk 
+score of a test sample is equal to the weighted average of the risk score of the 
+test sample under each selected model, multiplied by the predicted posterior 
+probability of each model. Note that in this case, a model consists of a set of 
+genes, and different models can potentially have overlapping genes. The posterior 
+probability of a gene is equal to the sum of the posterior probabilities of all 
+the models that the gene belongs to. Finally, the function {\tt predictiveAssessCategory}
+assigns each test sample to a risk group (either high-risk or low-risk) based on 
+the predicted risk score of the sample.
+
+<<testStep>>=
+## The test data matrix is called testData.
+data(testData)
+## The survival time vector for the test set is called testSurv, where survival times are reported in years
+data(testSurv)
+## The censor vector for the test set is called testCens, where 0 = censored and 1 = uncensored
+data(testCens)
+
+## Get the subset of test data with the genes from the last iteration of bic.surv
+curr.test.dat <- testData[, top.gene.names]
+
+## Compute the predicted risk scores for the test samples
+y.pred.test <- apply (curr.test.dat, 1, predictBicSurv, postprob.vec=ret.bic.surv$postprob, mle.mat=ret.bic.surv$mle)
+
+## Compute the risk scores for the training samples
+y.pred.train <- apply (trainData[, top.gene.names], 1, predictBicSurv, postprob.vec=ret.bic.surv$postprob, mle.mat=ret.bic.surv$mle)
+
+## Assign risk categories for test samples
+## Argument {\tt cutPoint} is the percentage cutoff for separating the high-risk group from the low-risk group
+ret.table <- predictiveAssessCategory (y.pred.test, y.pred.train, testCens, cutPoint=50) 
+
+## Extract risk group vector and risk group table
+risk.vector <- ret.table$groups
+risk.table <- ret.table$assign.risk
+risk.table
+
+## Create a survival object from the test set
+mySurv.obj <- Surv(testSurv, testCens)
+
+## Extract statistics including p-value, chi-square, and variance matrix
+stats <- survdiff(mySurv.obj ~ unlist(risk.vector))
+stats
+@
+
+The p-value is calculated using the central chi-square distribution.
+
+The function {\tt iterateBMAsurv.train.predict.assess} combines the training,
+prediction, and test phases. The function begins by calling {\tt singleGeneCoxph},
+which sorts the genes in descending order of their log likelihood. After calling
+{\tt iterateBMAsurv.train.wrapper} to conduct the {\tt bic.surv} iterations, the algorithm
+predicts the risk scores for the test samples and assigns them to a risk group. 
+Predictive accuracy is evaluated through the p-value and chi-square statistic, along with 
+a Kaplan-Meier survival analysis curve to serve as a pictorial nonparametric estimator of 
+the difference between risk groups. If the Cox Proportional Hazards Model is the desired
+univariate ranking measure, then calling the function {\tt iterateBMAsurv.train.predict.assess} 
+is all that is necessary for a complete survival analysis run. The parameter $p$ represents 
+the number of top univariate sorted genes to be used in the iterative calls to the 
+{\tt bic.surv} algorithm. Our studies showed that a relatively large $p$ typically yields 
+good results \citep{Yeung2005}.  For simplicity, there are 100 genes in the sample training 
+set, and we used $p$= 100 in the iterative BMA algorithm for survival analysis. Experimenting 
+with greater $p$ values, higher numbers of $nbest$ models, and different percentage cutoffs 
+for $cutPoint$ will likely yield more significant results than the following examples 
+illustrate. The function returns a list consisting of the following components:
+
+\begin{itemize}
+\item{\tt nvar}: {The number of variables selected by the last iteration of {\tt bic.surv}.}
+\item{\tt nmodel}: {The number of models selected by the last iteration of {\tt bic.surv}.}
+\item{\tt ypred}: {The predicted risk scores on the test samples.}
+\item{\tt result.table}: {A 2 x 2 table indicating the number of test samples in each 
+                        category (high-risk/censored, high-risk/uncensored, 
+                        low-risk/censored, low-risk/uncensored).}
+\item{\tt statistics}: {An object of class {\tt survdiff} that contains the statistics
+                      from survival analysis, including the variance matrix, chi-square
+                      statistic, and p-value.}
+\item{\tt success}: {A boolean variable returned as TRUE if both risk groups are present
+                   in the patient test samples.}
+\end{itemize}
+
+If all test samples are assigned to a single risk group or all samples are in the same
+censor category, a boolean variable {\tt success} is returned as FALSE.
+
+<<trainPredictTestStep>>=
+## Use p=10 genes and nbest=5 for fast computation
+ret.bma <- iterateBMAsurv.train.predict.assess (train.dat=trainData, test.dat=testData, surv.time.train=trainSurv, surv.time.test=testSurv, cens.vec.train=trainCens, cens.vec.test=testCens, p=10, nbest=5)
+
+## Extract the statistics from this survival analysis run
+number.genes <- ret.bma$nvar
+number.models <- ret.bma$nmodel
+evaluate.success <- ret.bma$statistics
+evaluate.success
+@
+
+The function {\tt crossVal} performs k runs of n-fold cross validation 
+on the training set, where k and n are specified by the user through 
+the {\tt noRuns} and {\tt noFolds} arguments respectively. The {\tt crossVal}
+function in this package can be used to evaluate the selected mathematical 
+models and determine the optimal input parameters for a given dataset. For 
+each run of cross validation, the training set, survival times, and censor 
+data are re-ordered according to a random permutation. For each fold of 
+cross validation, 1/nth of the data is set aside to act as the validation 
+set. In each fold, the {\tt iterateBMAsurv.train.predict.assess} function 
+is called in order to carry out a complete run of survival analysis. This 
+means the univariate ranking measure for this cross validation function is 
+Cox Proportional Hazards Regression; see {\tt iterateBMAsurv.train.wrapper} 
+to experiment with alternate univariate ranking methods. With each run 
+of cross validation, the survival analysis statistics are saved and 
+written to file. The output of this function is a series of files written
+to the working R directory which give the fold results, run results, per-fold
+statistics, and average statistics across all runs and all folds.
+
+<<crossValidationStep>>=
+## Perform 1 run of 2-fold cross validation on the training set, using p=10 genes and nbest=5 for fast computation
+## Argument {\tt diseaseType} specifies the type of disease present the training samples, used for writing to file
+cv <- crossVal (exset=trainData, survTime=trainSurv, censor=trainCens, diseaseType="DLBCL", noRuns=1, noFolds=2, p=10, nbest=5)
+@
+
+This package also contains the {\tt imageplot.iterate.bma.surv} function,
+which allows for the creation of a heatmap-style image to visualize the
+selected genes and models (see Figure~\ref{fig:image}).
+
+\begin{figure}[hp]
+  \centering
+<<imageplot, fig=TRUE, echo=FALSE>>=
+ imageplot.iterate.bma.surv (ret.bic.surv)
+@
+%%\includegraphics{iterateBMAsurv-imageplot}
+\caption{\label{fig:image}%
+An image plot showing the selected genes and models.}
+\end{figure}
+
+In Figure~\ref{fig:image}, the BMA selected variables are shown on the vertical
+axis, and the BMA selected models are shown on the horizontal axis. 
+The variables (genes) are sorted in decreasing order of the posterior 
+probability that the variable is not equal to 0 ({\tt probne0}) from top to 
+bottom.  The models are sorted in decreasing order of the
+model posterior probability ({\tt postprob}) from left to right.
+
+\section*{Acknowledgements}
+
+We would like to thank Isabelle Bichindaritz, Donald Chinn, Steve Hanks, Ian Painter, 
+Deanna Petrochilos, and Chris Volinsky. Yeung is supported by NIH-NCI 1K25CA106988. 
+Bumgarner is funded by NIH-NHLBI P50 HL073996, NIH-NIAID U54 AI057141, NIH-NCRR  R24 
+RR021863-01A1, NIH-NIDCR R01 DE012212-06, NIH-NCRR 1 UL1 RR 025014-01, and a generous 
+basic research grant from Merck. Raftery is supported by NIH-NICHD 1R01HDO54511-01A1, 
+NSF llS0534094, NSF ATM0724721, and Office of Naval Research grant N00014-01-1-0745.
+\bibliography{iterativeBMAsurv}
+
+
+\end{document}
+
