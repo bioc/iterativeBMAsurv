@@ -7,7 +7,9 @@
              is called, the variables in the dataset are assumed to be 
              pre-sorted by rank.}
 	     
-\usage{iterateBMAsurv.train.wrapper (x, surv.time, cens.vec, nbest=10, maxNvar=25, maxIter=200000, thresProbne0=1, verbose=FALSE, suff.string="")}
+\usage{
+iterateBMAsurv.train.wrapper (x, surv.time, cens.vec, nbest=10,
+    maxNvar=25, maxIter=200000, thresProbne0=1, verbose=FALSE, suff.string="")} 
 
 \arguments{
 \item{x}{Data matrix where columns are variables and rows are observations.  
@@ -44,16 +46,16 @@
 \details{In this wrapper function for \code{iterateBMAsurv.train}, the variables 
          are assumed to be sorted, and \code{bic.surv} is called repeatedly 
          until all the variables have been exhausted.  In the first application 
-         of the \code{bic.surv} algorithm, the top {\tt maxNvar} univariate 
+         of the \code{bic.surv} algorithm, the top \code{maxNvar} univariate 
          ranked genes are used. After each application of the \code{bic.surv} 
-         algorithm, the genes with {\tt probne0} < {\tt thresProbne0}
+         algorithm, the genes with \code{probne0} < \code{thresProbne0}
 	 are dropped, and the next univariate ordered genes are added
 	 to the \code{bic.surv} window. The function 
 	 \code{iterateBMAsurv.train.predict.assess} calls \code{SingleGeneCoxph} 
 	 before calling this function. Using this function directly, users can 
 	 experiment with alternative univariate measures.}
 
-\value{If {\tt maxIter} is reached or the iterations stop before all variables 
+\value{If \code{maxIter} is reached or the iterations stop before all variables 
        are exhausted, -1 is returned. If all variables are exhausted, two items 
        are returned: 
 \item{curr.names}{A vector containing the names of the variables (genes)
@@ -61,6 +63,7 @@
 \item{obj}{An object of class \code{bic.surv} returned by the last iteration of 
            \code{bic.surv}. The object of class \code{bic.surv} is a list 
            consisting of the following components:
+   \describe{
         \item{namesx}{the names of the variables in the last iteration of 
                       \code{bic.surv}.}
 	\item{postprob}{The posterior probabilities of the models selected.}
@@ -86,7 +89,9 @@
 		       before model averaging.}
 	\item{dropped}{A vector containing the names of those variables dropped 
 		       before model averaging.}
-	\item{call}{The matched call that created the bma.lm object.}}
+	\item{call}{The matched call that created the bma.lm object.}
+    }
+ }
 }
 
 \references{
@@ -128,10 +133,10 @@ data(trainCens)
 ## Run iterative bic.surv, using nbest=5 for fast computation
 ret.list <- iterateBMAsurv.train.wrapper (x=trainData, surv.time=trainSurv, cens.vec=trainCens, nbest=5)
 
-## Extract the \code{bic.surv} object
+## Extract the 'bic.surv' object
 ret.bma <- ret.list$obj
 
-## Extract the names of the genes from the last iteration of \code{bic.surv}
+## Extract the names of the genes from the last iteration of 'bic.surv'
 gene.names <- ret.list$curr.names
 
 }

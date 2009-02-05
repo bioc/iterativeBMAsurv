@@ -25,7 +25,7 @@
                 should equal the number of rows in x and the number of elements 
                 in surv.time.}
 \item{curr.mat}{Matrix of independent variables in the active \code{bic.surv}
-                window. There can be at most {\tt maxNvar} variables in the 
+                window. There can be at most \code{maxNvar} variables in the 
                 window at any given time.}
 \item{stopVar}{0 to continue iterations, 1 to stop iterations (default 0)}
 \item{nextVar}{Integer placeholder indicating the next variable to be brought 
@@ -53,9 +53,9 @@
          (genes) by a univariate measure such as Cox Proportional Hazards
          Regression, and then iteratively applying the \code{bic.surv} algorithm
 	 from the \code{BMA} package.  In the first application of
-	 the \code{bic.surv} algorithm, the top {\tt maxNvar} univariate
+	 the \code{bic.surv} algorithm, the top \code{maxNvar} univariate
 	 ranked genes are used.  After each application of the \code{bic.surv}
-	 algorithm, the genes with {\tt probne0} < {\tt thresProbne0}
+	 algorithm, the genes with \code{probne0} < \code{thresProbne0}
 	 are dropped, and the next univariate ordered genes are added
 	 to the active \code{bic.surv} window.}
 
@@ -67,6 +67,7 @@
 \item{}{An object of class \code{bic.surv} resulting from the last 
            iteration of \code{bic.surv}.  The object is a list consisting 
            of the following components:
+    \describe{
         \item{namesx}{the names of the variables in the last iteration of 
                       \code{bic.surv}.}
 	\item{postprob}{the posterior probabilities of the models selected.}
@@ -92,7 +93,9 @@
 		       before model averaging.}
 	\item{dropped}{a vector containing the names of those variables dropped 
 		       before model averaging.}
-	\item{call}{the matched call that created the bma.lm object.}}
+	\item{call}{the matched call that created the bma.lm object.}
+     }
+  }
 }
 
 \references{
@@ -153,7 +156,8 @@ selected.genes <- dimnames(ret.gene.mat)[[2]]
 ## Show the posterior probabilities of selected models
 ret.bma$postprob
 
-## Get the subset of test data with the genes from the last iteration of \code{bic.surv}
+## Get the subset of test data with the genes from the last iteration of
+## 'bic.surv'
 curr.test.dat <- testData[, selected.genes]
 
 ## Compute the predicted risk scores for the test samples

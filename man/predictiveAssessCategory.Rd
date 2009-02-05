@@ -95,7 +95,7 @@ selected.genes <- dimnames(ret.gene.mat)[[2]]
 ## Show the posterior probabilities of selected models
 ret.bma$postprob
 
-## Get the subset of test data with the genes from the last iteration of \code{bic.surv}
+## Get the subset of test data with the genes from the last iteration of 'bic.surv'
 curr.test.dat <- testData[, selected.genes]
 
 ## Compute the predicted risk scores for the test samples
@@ -117,7 +117,8 @@ mySurv.obj <- Surv(testSurv, testCens)
 ## Extract statistics including p-value and chi-square
 stats <- survdiff(mySurv.obj ~ unlist(risk.list))
 
-## The entire block of code above can be executed simply by calling \code{iterateBMAsurv.train.predict.assess}
+## The entire block of code above can be executed simply by calling
+## 'iterateBMAsurv.train.predict.assess' 
 
 }
 \keyword{survival}
