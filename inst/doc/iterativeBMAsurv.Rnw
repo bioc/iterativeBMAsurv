@@ -12,7 +12,7 @@
 \usepackage{times}
 \usepackage{hyperref}
 
-\usepackage[authoryear,round]{natbib}
+\usepackage{natbib}
 \usepackage{times}
 \usepackage{comment}
 
