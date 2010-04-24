@@ -1,0 +1,12 @@
+importFrom(graphics, axis, image, legend, par, plot)
+importFrom(grDevices, dev.off, pdf)
+importFrom(stats, pchisq, quantile, sd)
+importFrom(survival, coxph, Surv, survdiff, survfit)
+importFrom(utils, read.table, write.table)
+
+export(assignRiskGroup, crossVal, crossVal.final.calc, crossVal.fold,
+       crossVal.init, crossVal.run, crossVal.tabulate, imageplot.bma.mod,
+       imageplot.iterate.bma.surv, iterateBMAinit, iterateBMAsurv.train,
+       iterateBMAsurv.train.predict.assess, iterateBMAsurv.train.wrapper,
+       predictBicSurv, predictiveAssessCategory, printTopGenes,
+       singleGeneCoxph)
