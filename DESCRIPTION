@@ -1,7 +1,7 @@
 Package: iterativeBMAsurv
 Type: Package
 Title: The Iterative Bayesian Model Averaging (BMA) Algorithm For Survival Analysis
-Version: 1.9.0
+Version: 1.10.0
 Date: 2008-5-19
 Author: Amalia Annest, University of Washington, Tacoma, WA 
 	Ka Yee Yeung, University of Washington, Seattle, WA
