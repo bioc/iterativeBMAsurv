@@ -1,16 +1,17 @@
 Package: iterativeBMAsurv
 Type: Package
-Title: The Iterative Bayesian Model Averaging (BMA) Algorithm For Survival Analysis
-Version: 1.21.1
+Title: The Iterative Bayesian Model Averaging (BMA) Algorithm For
+        Survival Analysis
+Version: 1.21.2
 Date: 2008-5-19
-Author: Amalia Annest, University of Washington, Tacoma, WA 
-	Ka Yee Yeung, University of Washington, Seattle, WA
+Author: Amalia Annest, University of Washington, Tacoma, WA Ka Yee
+        Yeung, University of Washington, Seattle, WA
 Maintainer: Ka Yee Yeung <kayee@u.washington.edu>
-Description: The iterative Bayesian Model Averaging (BMA) algorithm
-	     for survival analysis is a variable selection method
-	     for applying survival analysis to microarray data.
+Description: The iterative Bayesian Model Averaging (BMA) algorithm for
+        survival analysis is a variable selection method for applying
+        survival analysis to microarray data.
 Depends: BMA, leaps, survival, splines
 Imports: graphics, grDevices, stats, survival, utils
 License: GPL (>= 2)
 URL: http://expression.washington.edu/ibmasurv/protected
-biocViews: Microarray, Bioinformatics
+biocViews: Microarray
